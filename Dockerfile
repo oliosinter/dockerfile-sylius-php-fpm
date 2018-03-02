@@ -36,6 +36,23 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     php composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
     php -r "unlink('composer-setup.php');"
 
+# Memcached Setup
+# Required libraries
+RUN apt-get update && \
+    apt-get install libmemcached-dev libmsgpack-dev libmsgpackc2 -y
+
+# Cloninig and building
+RUN cd /tmp && \
+    git clone --depth 1 https://github.com/php-memcached-dev/php-memcached.git && \
+    cd php-memcached && \
+    phpize && \
+    ./configure && \
+    make && \
+    mv modules/ /usr/local/memcached/
+
+RUN echo 'extension=/usr/local/memcached/memcached.so' | \
+    tee /usr/local/etc/php/conf.d/memcached.ini
+
 # Sylius PHP configuration
 COPY sylius.ini /usr/local/etc/php/sylius.ini
 
